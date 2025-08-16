@@ -1,4 +1,4 @@
--- A query to deduplicate game_details from Day 1 so there's no duplicates
+-- this query answers question 1
 WITH deduplicated AS (
 	SELECT 
 		*,
