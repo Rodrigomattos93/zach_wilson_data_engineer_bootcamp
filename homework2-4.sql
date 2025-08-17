@@ -1,5 +1,13 @@
 --this query answers question 5 and 6
 
+CREATE TABLE hosts_cumulated (
+	host TEXT,
+	host_activity_datelist DATE[],
+	current_date_ DATE,
+	PRIMARY KEY (host, current_date_)
+);
+
+
 INSERT INTO hosts_cumulated
 WITH dedup AS(
 	SELECT 
