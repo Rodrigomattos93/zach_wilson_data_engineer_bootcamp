@@ -1,4 +1,4 @@
---this query answers question 6 and 7
+--this query answers question 7 and 8
 
 CREATE TABLE IF NOT EXISTS host_activity_reduced(
 	current_date_ DATE,
