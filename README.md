@@ -1,1 +1,2 @@
-# zach_wilson_data_engineer_bootcamp
+homework 1 - dimensional data modelling
+homework 2 - fact data modelling
