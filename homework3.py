@@ -1,5 +1,7 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import broadcast, col
+import pandas as pd
+import os
 
 spark =  SparkSession.builder.appName("Jupyter").getOrCreate()
  
@@ -169,8 +171,36 @@ spark.sql("SELECT COUNT(DISTINCT match_id) FROM final_df").show()
 sort_by_low_cardinality_df = final_df.sortWithinPartitions(col("mapid"), col("playlist_id"))
 sort_by_high_cardinality_df = final_df.sortWithinPartitions(col("player_gamertag"))
 
-sort_by_low_cardinality_df.write.format("delta").mode("overwrite").saveAsTable("optimized_table")
-sort_by_high_cardinality_df.write.format("delta").mode("overwrite").saveAsTable("non_optimized_table")
+sort_by_low_cardinality_df.write.format("parquet").mode("overwrite").saveAsTable("optimized_table")
+sort_by_high_cardinality_df.write.format("parquet").mode("overwrite").saveAsTable("non_optimized_table")
 
-spark.sql("DESCRIBE DETAIL optimized_table").show()
-spark.sql("DESCRIBE DETAIL non_optimized_table").show()
+parquet_dir_opt = "/content/spark-warehouse/optimized_table"
+files_opt = []
+for f in os.listdir(parquet_dir_opt):
+    path = os.path.join(parquet_dir_opt, f)
+    size = os.path.getsize(path)
+    files_opt.append({"file_path": path, "file_size_in_bytes": size})
+
+df_files_opt = pd.DataFrame(files_opt)
+
+
+parquet_dir_non_opt = "/content/spark-warehouse/non_optimized_table"
+files_non_opt = []
+for f in os.listdir(parquet_dir_non_opt):
+    path = os.path.join(parquet_dir_non_opt, f)
+    size = os.path.getsize(path)
+    files_non_opt.append({"file_path": path, "file_size_in_bytes": size})
+
+df_files_non_opt = pd.DataFrame(files_non_opt)
+
+opt_total = df_files_opt["file_size_in_bytes"].sum()
+non_opt_total = df_files_non_opt["file_size_in_bytes"].sum()
+
+df_summary = pd.DataFrame([
+    {"table": "optimized", "total_size_bytes": opt_total},
+    {"table": "non_optimized", "total_size_bytes": non_opt_total}
+])
+
+df_summary
+
+#since I used google colab, I couldn't use format("delta") and SELECT * FROM .files to check sizes
